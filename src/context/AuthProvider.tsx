@@ -1,115 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
-import { User, UserRole } from '../types';
+import { User } from '../types';
+import { authService } from '../services/authService';
 import toast from 'react-hot-toast';
-
-// Mock Data Storage in LocalStorage for demo persists
-const STORAGE_KEY = 'locallink_users';
-const APP_USER_KEY = 'locallink_auth_user';
-const TOKEN_KEY = 'locallink_token';
-
-// Initial Mock Users
-const INITIAL_USERS: User[] = [
-  { id: '1', name: 'Super Admin', email: 'super@locallink.io', role: 'superadmin' },
-  { id: '2', name: 'Admin Jane', email: 'admin@locallink.io', role: 'admin' },
-  { id: '3', name: 'User Bob', email: 'user@locallink.io', role: 'user' },
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 2FA state
+  const [isTwoFactorStep, setIsTwoFactorStep] = useState(false);
+  const [tempToken, setTempToken] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
+  // ─── On Mount: Restore session ─────────────────────────────────────────────
   useEffect(() => {
-    const savedToken = localStorage.getItem(TOKEN_KEY);
-    const savedUser = localStorage.getItem(APP_USER_KEY);
-    
+    const savedToken = authService.getSavedToken();
+    const savedUser = authService.getSavedUser();
+
     if (savedToken && savedUser) {
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(savedUser);
+
+      authService
+        .getMe()
+        .then((freshUser) => {
+          setUser(freshUser);
+        })
+        .catch(() => {
+          authService.clearSession();
+          setToken(null);
+          setUser(null);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
     }
+  }, []);
+
+  const resetAuthFlow = useCallback(() => {
+    setIsTwoFactorStep(false);
+    setTempToken(null);
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  // ─── Login ────────────────────────────────────────────────────────────────
+  const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Fake API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const result = await authService.login(email, password);
       
-      // In a real app, this would be a POST to /auth/login
-      const users: User[] = JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify(INITIAL_USERS));
-      const foundUser = users.find(u => u.email === email);
-
-      if (foundUser && password === 'password') { // Simple secret for testing
-        const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-        setToken(fakeToken);
-        setUser(foundUser);
-        localStorage.setItem(TOKEN_KEY, fakeToken);
-        localStorage.setItem(APP_USER_KEY, JSON.stringify(foundUser));
-        toast.success(`Welcome back, ${foundUser.name}!`);
-        
-        // Redirect based on role
-        if (foundUser.role === 'superadmin') navigate('/superadmin');
-        else if (foundUser.role === 'admin') navigate('/admin');
-        else navigate('/');
+      if (result.type === '2FA_REQUIRED') {
+        setIsTwoFactorStep(true);
+        setTempToken(result.tempToken);
+        toast('Please enter your 2FA code to continue', { icon: '🛡️' });
       } else {
-        throw new Error('Invalid credentials');
+        const { token: newToken, user: loggedInUser } = result;
+        setToken(newToken);
+        setUser(loggedInUser);
+        toast.success(`Welcome back, ${loggedInUser.name}! 👋`);
+        
+        if (loggedInUser.role === 'superadmin') navigate('/superadmin');
+        else if (loggedInUser.role === 'admin') navigate('/admin');
+        else navigate('/dashboard');
       }
     } catch (error: any) {
-      toast.error(error.message);
+      const message = error?.response?.data?.detail || 'Login failed.';
+      toast.error(message);
       throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const register = async (data: any) => {
+  // ─── Verify 2FA ──────────────────────────────────────────────────────────
+  const verify2FA = useCallback(async (otpToken: string) => {
+    if (!tempToken) return;
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { token: newToken, user: loggedInUser } = await authService.verify2FA(otpToken, tempToken);
+      setToken(newToken);
+      setUser(loggedInUser);
+      setIsTwoFactorStep(false);
+      setTempToken(null);
       
-      const users: User[] = JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify(INITIAL_USERS));
-      if (users.some(u => u.email === data.email)) {
-        throw new Error('User already exists');
-      }
+      toast.success('Identity verified! Access granted.');
+      
+      if (loggedInUser.role === 'superadmin') navigate('/superadmin');
+      else if (loggedInUser.role === 'admin') navigate('/admin');
+      else navigate('/dashboard');
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || 'Verification failed.';
+      toast.error(message);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tempToken, navigate]);
 
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
+  // ─── Register ─────────────────────────────────────────────────────────────
+  const register = useCallback(async (data: any) => {
+    setIsLoading(true);
+    try {
+      await authService.register({
         name: data.name,
         email: data.email,
-        role: 'user',
+        password: data.password,
         businessName: data.businessName,
         category: data.category,
         location: data.location,
-      };
-
-      const updatedUsers = [...users, newUser];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
-      
-      toast.success('Registration successful! Please login.');
+      });
+      toast.success('Account created! Please log in.');
       navigate('/login');
     } catch (error: any) {
-      toast.error(error.message);
+      const message = error?.response?.data?.detail || 'Registration failed.';
+      toast.error(message);
       throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const logout = () => {
+  // ─── Logout ───────────────────────────────────────────────────────────────
+  const logout = useCallback(() => {
+    authService.clearSession();
     setToken(null);
     setUser(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(APP_USER_KEY);
-    toast.success('Logged out successfully');
+    setIsTwoFactorStep(false);
+    setTempToken(null);
+    toast.success('Logged out successfully.');
     navigate('/login');
-  };
+  }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ 
+        user, token, isAuthenticated: !!token, isLoading, 
+        login, register, logout, 
+        isTwoFactorStep, verify2FA, resetAuthFlow 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

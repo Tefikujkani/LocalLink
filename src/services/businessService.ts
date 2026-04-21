@@ -1,109 +1,114 @@
 import { Business, BusinessStatus } from '../types';
+import api from './api';
 
-const STORAGE_KEY = 'locallink_businesses';
-
-const INITIAL_BUSINESSES: Business[] = [
-  {
-    id: 'b1',
-    ownerId: '3',
-    name: 'Missini Sweets & Cafe',
-    category: 'Café',
-    description: 'The most famous sweets and coffee spot in the heart of Vushtrri.',
-    phone: '+38344111222',
-    lat: 42.8231,
-    lng: 20.9678,
-    status: 'approved',
-    createdAt: new Date().toISOString(),
-    imageUrl: 'https://picsum.photos/seed/missini/800/600',
-    rating: 4.8,
-  },
-  {
-    id: 'b2',
-    ownerId: '3',
-    name: 'City Grill Vushtrri',
-    category: 'Restaurant',
-    description: 'Authentic grilled specialties and the best traditional food in town.',
-    phone: '+38349333444',
-    lat: 42.8239,
-    lng: 20.9664,
-    status: 'approved',
-    createdAt: new Date().toISOString(),
-    imageUrl: 'https://picsum.photos/seed/citygrill/800/600',
-    rating: 4.5,
-  },
-  {
-    id: 'b3',
-    ownerId: '4',
-    name: 'Gentlemen\'s Barber Shop',
-    category: 'Barber Shop',
-    description: 'Premium grooming and hair styling for the modern man of Vushtrri.',
-    phone: '+38345555666',
-    lat: 42.8225,
-    lng: 20.9690,
-    status: 'approved',
-    createdAt: new Date().toISOString(),
-    imageUrl: 'https://picsum.photos/seed/barber/800/600',
-    rating: 4.9,
-  },
-  {
-    id: 'b4',
-    ownerId: '5',
-    name: 'Vushtrri Castle Café',
-    category: 'Café',
-    description: 'Enjoy your coffee with a view of the historic Vushtrri Castle.',
-    phone: '+38344777888',
-    lat: 42.8240,
-    lng: 20.9670,
-    status: 'approved',
-    createdAt: new Date().toISOString(),
-    imageUrl: 'https://picsum.photos/seed/castle/800/600',
-    rating: 4.7,
-  },
-];
+// Helper to normalize backend snake_case fields to camelCase
+const normalize = (b: any): Business => ({
+  id: b.id,
+  ownerId: b.ownerId,
+  name: b.name,
+  category: b.category,
+  description: b.description,
+  phone: b.phone,
+  lat: b.lat,
+  lng: b.lng,
+  status: b.status as BusinessStatus,
+  createdAt: b.createdAt,
+  imageUrl: b.imageUrl,
+  rating: b.rating,
+  locationName: b.locationName,
+});
 
 export const businessService = {
+  /** GET /api/businesses — public, returns only approved listings */
   getBusinesses: async (): Promise<Business[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify(INITIAL_BUSINESSES));
+    const { data } = await api.get('/api/businesses');
+    return data.map(normalize);
   },
 
-  getMyBusinesses: async (userId: string): Promise<Business[]> => {
-    const all = await businessService.getBusinesses();
-    return all.filter(b => b.ownerId === userId);
+  /** GET /api/businesses/mine — current user's own listings */
+  getMyBusinesses: async (): Promise<Business[]> => {
+    const { data } = await api.get('/api/businesses/mine');
+    return data.map(normalize);
   },
 
+  /** GET /api/businesses/pending — admin/superadmin only */
   getPendingBusinesses: async (): Promise<Business[]> => {
-    const all = await businessService.getBusinesses();
-    return all.filter(b => b.status === 'pending');
+    const { data } = await api.get('/api/businesses/pending');
+    return data.map(normalize);
   },
 
-  createBusiness: async (data: Omit<Business, 'id' | 'status' | 'createdAt'>): Promise<Business> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const all = await businessService.getBusinesses();
-    const newBusiness: Business = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...all, newBusiness]));
-    return newBusiness;
+  /** POST /api/businesses — create a new business listing */
+  createBusiness: async (
+    payload: Omit<Business, 'id' | 'status' | 'createdAt' | 'ownerId'>
+  ): Promise<Business> => {
+    const { data } = await api.post('/api/businesses', {
+      name: payload.name,
+      category: payload.category,
+      description: payload.description,
+      phone: payload.phone,
+      lat: payload.lat,
+      lng: payload.lng,
+      locationName: payload.locationName,
+      imageUrl: payload.imageUrl,
+    });
+    return normalize(data);
   },
 
+  /** PUT /api/businesses/:id — update an existing listing */
+  updateBusiness: async (
+    id: string,
+    payload: Omit<Business, 'id' | 'status' | 'createdAt' | 'ownerId'>
+  ): Promise<Business> => {
+    const { data } = await api.put(`/api/businesses/${id}`, {
+      name: payload.name,
+      category: payload.category,
+      description: payload.description,
+      phone: payload.phone,
+      lat: payload.lat,
+      lng: payload.lng,
+      locationName: payload.locationName,
+      imageUrl: payload.imageUrl,
+    });
+    return normalize(data);
+  },
+
+  /** PUT /api/businesses/:id/status — admin only */
   updateBusinessStatus: async (id: string, status: BusinessStatus): Promise<Business> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const all = await businessService.getBusinesses();
-    const index = all.findIndex(b => b.id === id);
-    if (index === -1) throw new Error('Business not found');
-    
-    all[index].status = status;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-    return all[index];
+    const { data } = await api.put(`/api/businesses/${id}/status`, { status });
+    return normalize(data);
   },
 
+  /** GET /api/businesses/upload-url */
+  getUploadUrl: async (fileName: string, contentType: string): Promise<{ url: string; key: string; is_mock: boolean }> => {
+    const { data } = await api.get('/api/businesses/upload-url', {
+      params: { file_name: fileName, content_type: contentType }
+    });
+    return data;
+  },
+
+  /** Direct upload to S3 (or mock) */
+  uploadImage: async (file: File): Promise<string> => {
+    const { url, key, is_mock } = await businessService.getUploadUrl(file.name, file.type);
+    
+    // Direct upload to S3 via PUT
+    await api.put(url, file, {
+      headers: { 'Content-Type': file.type }
+    });
+    
+    // Return the final S3 key or URL
+    return is_mock ? `mock:///${key}` : key;
+  },
+
+  /** POST /api/ai/assistant */
+  askAI: async (query: string, businessId?: string): Promise<string> => {
+    const { data } = await api.post('/api/ai/assistant', null, {
+      params: { query, business_id: businessId }
+    });
+    return data.response;
+  },
+
+  /** DELETE /api/businesses/:id */
   deleteBusiness: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const all = await businessService.getBusinesses();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all.filter(b => b.id !== id)));
-  }
+    await api.delete(`/api/businesses/${id}`);
+  },
 };

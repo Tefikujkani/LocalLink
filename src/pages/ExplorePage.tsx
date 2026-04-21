@@ -21,7 +21,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Search, MapPin, Phone, Tag, Filter, Star, X, Globe, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // Helper component to handle map movements
@@ -166,7 +166,7 @@ export const ExplorePage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2 text-[9px] uppercase font-bold text-slate-600 group-hover:text-slate-400 tracking-[0.1em] transition-colors">
                     <MapPin className="w-3 h-3 text-emerald-500/30 group-hover:text-emerald-500 transition-colors" />
-                    Vushtrri
+                    {b.locationName || 'Center'}
                   </div>
                 </div>
               </motion.div>
@@ -307,7 +307,7 @@ export const ExplorePage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Physical Hub</p>
-                        <p className="text-base text-white font-bold">Center, Vushtrri 42000</p>
+                        <p className="text-base text-white font-bold">{selectedBusiness.locationName || 'Main Center'}, Kosovo</p>
                       </div>
                     </div>
                  </div>

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Briefcase, MapPin, Tag, Trash2, ExternalLink, Clock, Plus } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'motion';
 import { cn, formatDate } from '../utils/cn';
 import toast from 'react-hot-toast';
 import { BusinessForm } from '../components/BusinessForm';
@@ -20,7 +20,7 @@ export const MyBusinessesPage: React.FC = () => {
 
   const loadBusinesses = async () => {
     try {
-      const data = await businessService.getMyBusinesses(user!.id);
+      const data = await businessService.getMyBusinesses();
       setBusinesses(data);
     } catch (e) {
       toast.error('Failed to load businesses');

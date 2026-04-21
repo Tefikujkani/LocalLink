@@ -27,17 +27,18 @@ export const DashboardLayout: React.FC = () => {
   ];
 
   const adminItems = [
-    { name: 'Admin Hub', path: '/admin', icon: BadgeCheck },
-    { name: 'Business Queue', path: '/admin/businesses', icon: Briefcase },
-    { name: 'User Directory', path: '/admin/users', icon: UsersIcon },
-    { name: 'System Logs', path: '/admin/logs', icon: Settings },
+    { name: 'My Workspace', path: '/admin', icon: LayoutDashboard },
+    { name: 'My Businesses', path: '/admin/businesses', icon: Briefcase },
+    { name: 'Customer Interactions', path: '/admin/orders', icon: Activity },
+    { name: 'Security Settings', path: '/dashboard/settings', icon: Settings },
   ];
-
+  
   const superAdminItems = [
     { name: 'Core Console', path: '/superadmin', icon: ShieldAlert },
-    { name: 'Admin Control', path: '/superadmin/admins', icon: BadgeCheck },
+    { name: 'Business Hub', path: '/superadmin/hub', icon: Briefcase },
+    { name: 'User Directory', path: '/superadmin/users', icon: UsersIcon },
     { name: 'Global Settings', path: '/superadmin/settings', icon: Settings },
-    { name: 'Network Monitor', path: '/superadmin/network', icon: Activity },
+    { name: 'System Monitor', path: '/superadmin/network', icon: Activity },
   ];
 
   const sidebarItems = user?.role === 'superadmin' ? superAdminItems : 

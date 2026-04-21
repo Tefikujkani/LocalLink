@@ -2,26 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../../types';
 import { User as UserIcon, Shield, Trash2, ArrowUpCircle, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { userService } from '../../services/userService';
+import { cn } from '../../utils/cn';
 
 export const ManageUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app index would come from an API
-    const saved = localStorage.getItem('locallink_users');
-    if (saved) setUsers(JSON.parse(saved));
-    setLoading(false);
+    loadUsers();
   }, []);
 
-  const handleRoleChange = (id: string, role: UserRole) => {
-    const updated = users.map(u => u.id === id ? { ...u, role } : u);
-    setUsers(updated);
-    localStorage.setItem('locallink_users', JSON.stringify(updated));
-    toast.success(`User role updated to ${role}`);
+  const loadUsers = async () => {
+    try {
+      const data = await userService.getUsers();
+      setUsers(data);
+    } catch (e) {
+      toast.error('Failed to load users');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) return <div className="p-8"><Clock className="animate-spin" /></div>;
+  const handleRoleChange = async (id: string, role: UserRole) => {
+    try {
+      await userService.updateUserRole(id, role);
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u));
+      toast.success(`User role updated to ${role}`);
+    } catch (e) {
+      toast.error('Failed to update role');
+    }
+  };
+
+  if (loading) return <div className="p-8 flex justify-center"><Clock className="animate-spin text-emerald-500" /></div>;
 
   return (
     <div className="p-8">
@@ -85,5 +98,3 @@ export const ManageUsers: React.FC = () => {
     </div>
   );
 };
-
-import { cn } from '../../utils/cn';

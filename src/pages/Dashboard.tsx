@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Plus, Briefcase, CheckCircle, Clock, XCircle, TrendingUp, Users, Map as MapIcon } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'motion';
 import { cn } from '../utils/cn';
 import { BusinessForm } from '../components/BusinessForm';
 
@@ -18,7 +19,7 @@ export const UserDashboard: React.FC = () => {
   }, [user]);
 
   const loadData = async () => {
-    const data = await businessService.getMyBusinesses(user!.id);
+    const data = await businessService.getMyBusinesses();
     setMyBusinesses(data);
     setStats({
       total: data.length,
@@ -122,9 +123,12 @@ export const UserDashboard: React.FC = () => {
           <p className="text-slate-500 text-sm max-w-xs mb-6 font-medium">
             Make sure your business details are accurate to attract more customers from the map view.
           </p>
-          <button className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors shadow-sm">
-            Optimize Profile
-          </button>
+          <Link 
+            to="/dashboard/settings"
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors shadow-sm block text-center"
+          >
+            Enhance Security
+          </Link>
         </div>
       </div>
     </div>

@@ -6,10 +6,11 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  password?: string; // For mock auth
+  password?: string;
   businessName?: string;
   category?: string;
   location?: string;
+  is2faEnabled?: boolean;
 }
 
 export type BusinessStatus = 'pending' | 'approved' | 'rejected';
@@ -27,6 +28,7 @@ export interface Business {
   createdAt: string;
   imageUrl?: string;
   rating?: number;
+  locationName?: string;
 }
 
 export interface AuthState {
