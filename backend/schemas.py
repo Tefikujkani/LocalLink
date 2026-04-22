@@ -112,7 +112,7 @@ class BusinessOwnerResponse(BaseModel):
 class BusinessResponse(BaseModel):
     model_config = common_config
 
-    id: str
+    id: str = Field(..., validation_alias=AliasChoices('id', '_id'))
     tenant_id: Optional[str] = None
     owner_id: str
     name: str
