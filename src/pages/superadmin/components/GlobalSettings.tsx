@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { settingsService, Webhook } from '../../../services/settingsService';
 import { Settings, Globe, Plus, Trash2, ShieldCheck, Mail, Bell, HardDrive } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 
 export const GlobalSettings: React.FC = () => {

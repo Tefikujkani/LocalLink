@@ -21,7 +21,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Search, MapPin, Phone, Tag, Filter, Star, X, Globe, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // Helper component to handle map movements

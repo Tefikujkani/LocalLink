@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Users, Clock, CheckCircle2, XCircle, MessageSquare, Briefcase, ExternalLink, Filter } from 'lucide-react';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 import { cn } from '../../utils/cn';
 
 interface Order {

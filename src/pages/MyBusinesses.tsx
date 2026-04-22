@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Briefcase, MapPin, Tag, Trash2, ExternalLink, Clock, Plus } from 'lucide-react';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 import { cn, formatDate } from '../utils/cn';
 import toast from 'react-hot-toast';
 import { BusinessForm } from '../components/BusinessForm';

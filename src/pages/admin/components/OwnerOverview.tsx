@@ -10,7 +10,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 
 export const OwnerOverview: React.FC = () => {
   const { user } = useAuth();

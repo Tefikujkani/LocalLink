@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Activity, Users, Lock, Server } from 'lucide-react';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 
 export const SuperOverview: React.FC = () => {
     const adminStats = [

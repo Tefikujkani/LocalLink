@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, Send, X, Sparkles, User, Bot, Loader2 } from 'lucide-react';
 import { businessService } from '../services/businessService';
 import { cn } from '../utils/cn';

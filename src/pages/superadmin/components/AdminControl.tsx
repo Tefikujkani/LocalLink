@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../../../services/adminService';
 import { User, UserRole } from '../../../types';
 import { Users, Shield, UserX, MoreVertical, Search, CheckCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 
 export const AdminControl: React.FC = () => {

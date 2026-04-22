@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 import { Search, MapPin, Briefcase, Zap, Shield, Users, ArrowRight, Star, CheckCircle2 } from 'lucide-react';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { businessService } from '../services/businessService';
 import { Business } from '../types';
 import { Plus, Briefcase, CheckCircle, Clock, XCircle, TrendingUp, Users, Map as MapIcon } from 'lucide-react';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 import { cn } from '../utils/cn';
 import { BusinessForm } from '../components/BusinessForm';
 

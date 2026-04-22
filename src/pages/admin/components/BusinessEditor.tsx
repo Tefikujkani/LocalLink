@@ -3,7 +3,7 @@ import { Business } from '../../../types';
 import { businessService } from '../../../services/businessService';
 import { X, Upload, MapPin, Loader2, Save, Phone, Type, MessageSquare, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 
 interface BusinessEditorProps {
   business: Business | null;

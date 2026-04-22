@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Settings, Activity, Briefcase, Command } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 export const SuperDashboard: React.FC = () => {

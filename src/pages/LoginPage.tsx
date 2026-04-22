@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Loader2, Mail, Lock, Search, ShieldCheck, ArrowLeft, Key } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const LoginPage: React.FC = () => {
   // Standard login state

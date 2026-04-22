@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../../../services/adminService';
 import { Business } from '../../../types';
 import { CheckCircle, XCircle, Trash2, Eye, ShieldAlert, Clock, Filter } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 import { businessService } from '../../../services/businessService';
 
