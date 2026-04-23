@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 import uuid
 
 from database import get_db
@@ -26,21 +26,42 @@ async def register(request: Request, payload: RegisterRequest, db = Depends(get_
         )
 
     user_id = str(uuid.uuid4())
+    
+    role = "admin" if payload.business_name else "user"
+
     new_user_doc = {
         "_id": user_id,
         "name": payload.name,
         "email": payload.email,
         "hashed_password": hash_password(payload.password),
-        "role": "user",
+        "role": role,
         "is_active": True,
         "is_2fa_enabled": False,
         "business_name": payload.business_name,
         "category": payload.category,
         "location": payload.location, # Note: Should be encrypted in a real scenario
-        "created_at": None # Will be set by schema or here
+        "created_at": datetime.now(timezone.utc)
     }
     
     await db.users.insert_one(new_user_doc)
+
+    if payload.business_name:
+        biz_id = str(uuid.uuid4())
+        new_biz_doc = {
+            "_id": biz_id,
+            "owner_id": user_id,
+            "name": payload.business_name,
+            "category": payload.category or "Other",
+            "description": "Auto-generated business profile from registration.",
+            "phone": "000-000-0000",
+            "location_name": payload.location or "Unknown",
+            "lat": 0.0,
+            "lng": 0.0,
+            "image_url": None,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.businesses.insert_one(new_biz_doc)
     
     await log_activity(
         db, "REGISTRATION_SUCCESS", 
